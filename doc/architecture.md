@@ -74,5 +74,5 @@
 
 ## 関連文書
 
-- `doc/requrements.md` — 要件定義
+- `doc/requirements.md` — 要件定義
 - `doc/excel-format.md` — 貼り付け先Excelの詳細仕様とTSVの書式

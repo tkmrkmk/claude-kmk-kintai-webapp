@@ -3,7 +3,7 @@
 対象ファイル: `resources/勤務報告書2026年度（0246竹森千馬）.xlsm`
 
 アプリが生成するTSVの貼り付け先となるExcelブックの構造をまとめる。
-要件の概要は `doc/requrements.md`、アプリ側の設計は `doc/architecture.md` を参照。
+要件の概要は `doc/requirements.md`、アプリ側の設計は `doc/architecture.md` を参照。
 
 ---
 

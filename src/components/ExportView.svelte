@@ -14,9 +14,7 @@
   let { year, month, onnotify }: Props = $props();
 
   const data = $derived(buildMonthExport(store.days, store.fiscalYear, year, month));
-  const summary = $derived(
-    summarizeMonth(store.days, store.fiscalYear, year, month, store.settings.carryOver)
-  );
+  const summary = $derived(summarizeMonth(store.days, year, month));
 
   let manual = $state<string | null>(null);
   /** 結合セルに拒否された場合の1行ずつコピーモード */

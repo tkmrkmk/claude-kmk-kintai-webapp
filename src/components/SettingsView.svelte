@@ -122,22 +122,6 @@
 </div>
 
 <div class="card">
-  <h2>振休残の起点</h2>
-  <p class="muted" style="margin:0 0 6px">
-    Excel `年間入力シート` の O13（前期引き継ぎ）に合わせます。
-  </p>
-  <input
-    type="text"
-    value={store.settings.carryOver}
-    onchange={(e) => {
-      const v = e.currentTarget.value;
-      store.updateSettings((s) => (s.carryOver = v));
-    }}
-    placeholder="例: 2:10"
-  />
-</div>
-
-<div class="card">
   <h2>作業内容のプリセット</h2>
   <div class="row wrap">
     {#each store.settings.presets.work as preset (preset)}

@@ -48,8 +48,6 @@ export interface Settings {
     work: string[];
     note: string[];
   };
-  /** 振休残の起点（Excel O13 の前期引き継ぎ）。`H:mm`、マイナス可 */
-  carryOver: string;
 }
 
 export interface FiscalData {
@@ -74,8 +72,7 @@ export function defaultSettings(): Settings {
     presets: {
       work: ['AIプロダクト（自宅）', 'AIプロダクト（本社）'],
       note: ['★草加↔築地']
-    },
-    carryOver: '2:10'
+    }
   };
 }
 

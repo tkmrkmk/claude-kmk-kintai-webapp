@@ -14,9 +14,7 @@
 
   let { year, month, selected, onselect }: Props = $props();
 
-  const summary = $derived(
-    summarizeMonth(store.days, store.fiscalYear, year, month, store.settings.carryOver)
-  );
+  const summary = $derived(summarizeMonth(store.days, year, month));
 
   // 月初の曜日ぶんだけ先頭を空ける
   const leading = $derived(new Date(year, month - 1, 1).getDay());
@@ -70,8 +68,6 @@
   <div class="stats">
     <div><span class="muted">合計実働</span><strong>{humanDuration(summary.totalWorked)}</strong></div>
     <div><span class="muted">勤務日数</span><strong>{summary.workedDays}日</strong></div>
-    <div><span class="muted">月初 振休残</span><strong>{formatTime(summary.openingBalance)}</strong></div>
-    <div><span class="muted">月末 振休残</span><strong>{formatTime(summary.closingBalance)}</strong></div>
   </div>
   {#if summary.byType.length}
     <div class="row wrap" style="margin-top:8px">

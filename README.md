@@ -45,7 +45,7 @@ src/
     excel.ts              行番号の算出と貼り付けブロック定義
     tsv.ts                TSVの生成・パース・マージ
     validation.ts         入力検証（要件定義 7章）
-    summary.ts            月次集計と振休残（Excel O列と同じロジック）
+    summary.ts            月次集計
     storage.ts            LocalStorage 入出力（キー: `kintai:<年度>`）
     store.svelte.ts       アプリ状態（runes）と即時保存
     clipboard.ts          クリップボードコピーとフォールバック

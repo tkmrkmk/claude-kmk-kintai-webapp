@@ -57,8 +57,6 @@ export function normalizeData(input: unknown, fallbackYear: number): FiscalData 
       work: Array.isArray(presets?.work) ? presets.work.filter((v) => typeof v === 'string') : base.presets.work,
       note: Array.isArray(presets?.note) ? presets.note.filter((v) => typeof v === 'string') : base.presets.note
     };
-    data.settings.carryOver =
-      typeof settings.carryOver === 'string' ? settings.carryOver : base.carryOver;
   }
 
   const days = raw.days as Record<string, unknown> | undefined;

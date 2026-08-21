@@ -37,7 +37,7 @@
 |---|---|---|
 | Preact + Signals | 〜6KB | Svelteとほぼ同等。React経験を流用する必要がないため見送り |
 | Vanilla TS | 0KB | カレンダー再描画とフォーム状態同期の自前実装が保守負債になる |
-| Alpine.js | 〜15KB | TypeScriptが使えず、TSVパース・バリデーション・振休残計算を型なしで書くことになる |
+| Alpine.js | 〜15KB | TypeScriptが使えず、TSVパース・バリデーションを型なしで書くことになる |
 
 ### サイズに関する前提
 

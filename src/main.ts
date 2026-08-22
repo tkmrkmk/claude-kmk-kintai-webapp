@@ -1,6 +1,11 @@
 import { mount } from 'svelte';
 import './app.css';
 import App from './App.svelte';
+import { store } from './lib/store.svelte';
+import { applyTheme, watchSystemTheme } from './lib/theme';
+
+applyTheme(store.theme);
+watchSystemTheme(() => store.theme);
 
 const app = mount(App, { target: document.getElementById('app')! });
 

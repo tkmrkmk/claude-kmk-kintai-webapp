@@ -3,6 +3,7 @@
   import { fiscalYearOf } from '../lib/date';
   import { normalizeData, savedFiscalYears } from '../lib/storage';
   import { store } from '../lib/store.svelte';
+  import { THEMES, THEME_LABELS } from '../lib/theme';
   import TimeSelect from './TimeSelect.svelte';
 
   interface Props {
@@ -70,6 +71,25 @@
     onnotify('削除しました');
   }
 </script>
+
+<div class="card">
+  <h2>テーマ</h2>
+  <div class="themes" role="group" aria-label="テーマ">
+    {#each THEMES as theme (theme)}
+      <button
+        class="btn small"
+        class:primary={store.theme === theme}
+        aria-pressed={store.theme === theme}
+        onclick={() => store.setTheme(theme)}
+      >
+        {THEME_LABELS[theme]}
+      </button>
+    {/each}
+  </div>
+  <p class="muted" style="margin-bottom:0">
+    「端末の設定」はOS/ブラウザのライト・ダーク設定に追従します。
+  </p>
+</div>
 
 <div class="card">
   <h2>年度</h2>
@@ -184,6 +204,13 @@
 </div>
 
 <style>
+  .themes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
   .times {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

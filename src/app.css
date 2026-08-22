@@ -1,21 +1,33 @@
 :root {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface-2: #273449;
-  --border: #334155;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --accent: #38bdf8;
-  --accent-ink: #082f49;
-  --danger: #f87171;
-  --warn: #fbbf24;
-  --ok: #4ade80;
+  /* light-dark() の第1引数がライト、第2引数がダーク。
+     実際の切り替えは下の color-scheme（=data-theme 属性）で決まる。 */
+  --bg: light-dark(#f1f5f9, #0f172a);
+  --surface: light-dark(#ffffff, #1e293b);
+  --surface-2: light-dark(#e8eef6, #273449);
+  --border: light-dark(#cbd5e1, #334155);
+  --text: light-dark(#0f172a, #e2e8f0);
+  --muted: light-dark(#5b6b7f, #94a3b8);
+  --accent: light-dark(#0369a1, #38bdf8);
+  --accent-ink: light-dark(#f0f9ff, #082f49);
+  --danger: light-dark(#dc2626, #f87171);
+  --warn: light-dark(#a16207, #fbbf24);
+  --ok: light-dark(#15803d, #4ade80);
+  --shadow: light-dark(rgb(15 23 42 / 22%), rgb(0 0 0 / 40%));
   --nav-h: 56px;
 
-  color-scheme: dark;
+  /* 既定は端末（OS）の設定に従う。設定画面で選ぶと data-theme が付く */
+  color-scheme: light dark;
   font-family: system-ui, -apple-system, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
   font-size: 16px;
   line-height: 1.5;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 * {
@@ -256,7 +268,7 @@ textarea {
   font-weight: 700;
   padding: 10px 16px;
   border-radius: 999px;
-  box-shadow: 0 6px 20px rgb(0 0 0 / 40%);
+  box-shadow: 0 6px 20px var(--shadow);
   max-width: calc(100% - 32px);
   text-align: center;
 }

@@ -1,32 +1,39 @@
 import { fiscalYearOf } from './date';
 import * as storage from './storage';
+import { applyTheme, isTheme, type Theme } from './theme';
 import { isEmptyEntry, type DayEntry, type FiscalData, type Settings } from './types';
 
 const UI_KEY = 'kintai:ui';
 
-function initialFiscalYear(): number {
+/** 年度・テーマなど、年度データとは別に持つUI設定 */
+function loadUi(): { fiscalYear: number; theme: Theme } {
+  const ui = { fiscalYear: fiscalYearOf(new Date()), theme: 'system' as Theme };
   try {
     const raw = localStorage.getItem(UI_KEY);
     if (raw) {
-      const ui = JSON.parse(raw) as { fiscalYear?: number };
-      if (Number.isInteger(ui.fiscalYear)) return ui.fiscalYear as number;
+      const saved = JSON.parse(raw) as { fiscalYear?: number; theme?: unknown };
+      if (Number.isInteger(saved.fiscalYear)) ui.fiscalYear = saved.fiscalYear as number;
+      if (isTheme(saved.theme)) ui.theme = saved.theme;
     }
   } catch {
     /* 既定値へフォールバック */
   }
-  return fiscalYearOf(new Date());
+  return ui;
 }
 
 /** アプリ全体の状態。runes で保持し、更新のたびに LocalStorage へ即時保存する。 */
 class KintaiStore {
-  data = $state<FiscalData>(storage.defaultDataFor(initialFiscalYear()));
+  data = $state<FiscalData>(storage.defaultDataFor(fiscalYearOf(new Date())));
+  theme = $state<Theme>('system');
   /** 保存に失敗した場合のメッセージ（容量超過・プライベートモード等） */
   saveError = $state<string | null>(null);
   storageAvailable = $state(true);
 
   constructor() {
     this.storageAvailable = storage.storageAvailable();
-    this.data = storage.load(initialFiscalYear());
+    const ui = loadUi();
+    this.theme = ui.theme;
+    this.data = storage.load(ui.fiscalYear);
   }
 
   get fiscalYear(): number {
@@ -48,7 +55,10 @@ class KintaiStore {
 
   private persistUi(): void {
     try {
-      localStorage.setItem(UI_KEY, JSON.stringify({ fiscalYear: this.data.fiscalYear }));
+      localStorage.setItem(
+        UI_KEY,
+        JSON.stringify({ fiscalYear: this.data.fiscalYear, theme: this.theme })
+      );
     } catch {
       /* 何もしない */
     }
@@ -56,6 +66,12 @@ class KintaiStore {
 
   setFiscalYear(fiscalYear: number): void {
     this.data = storage.load(fiscalYear);
+    this.persistUi();
+  }
+
+  setTheme(theme: Theme): void {
+    this.theme = theme;
+    applyTheme(theme);
     this.persistUi();
   }
 

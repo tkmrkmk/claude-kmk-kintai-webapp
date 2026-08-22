@@ -3,6 +3,7 @@
   import { fiscalYearOf } from '../lib/date';
   import { normalizeData, savedFiscalYears } from '../lib/storage';
   import { store } from '../lib/store.svelte';
+  import { THEMES, THEME_LABELS } from '../lib/theme';
   import TimeSelect from './TimeSelect.svelte';
 
   interface Props {
@@ -21,6 +22,8 @@
   let newWork = $state('');
   let newNote = $state('');
   let importJson = $state('');
+  let importFileName = $state('');
+  let fileInput = $state<HTMLInputElement | null>(null);
 
   function addPreset(kind: 'work' | 'note') {
     const value = (kind === 'work' ? newWork : newNote).trim();
@@ -53,11 +56,42 @@
     URL.revokeObjectURL(url);
   }
 
+  function readFile(file: File): Promise<string> {
+    if (typeof file.text === 'function') return file.text();
+    // File.text() 非対応環境（古い iOS Safari 等）向けフォールバック
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ''));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(file);
+    });
+  }
+
+  async function onFilePicked(e: Event) {
+    const input = e.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    // 同じファイルを選び直しても change が発火するようにクリアする
+    input.value = '';
+    if (!file) return;
+    try {
+      const text = await readFile(file);
+      JSON.parse(text);
+      importJson = text;
+      importFileName = file.name;
+      onnotify(`${file.name} を読み込みました`);
+    } catch {
+      importJson = '';
+      importFileName = '';
+      onnotify('ファイルを読み込めませんでした（JSON形式ではありません）');
+    }
+  }
+
   function restoreJson() {
     try {
       const data = normalizeData(JSON.parse(importJson), store.fiscalYear);
       store.replaceAll(data);
       importJson = '';
+      importFileName = '';
       onnotify(`${data.fiscalYear}年度のデータを復元しました`);
     } catch {
       onnotify('JSONの読み込みに失敗しました');
@@ -70,6 +104,25 @@
     onnotify('削除しました');
   }
 </script>
+
+<div class="card">
+  <h2>テーマ</h2>
+  <div class="themes" role="group" aria-label="テーマ">
+    {#each THEMES as theme (theme)}
+      <button
+        class="btn small"
+        class:primary={store.theme === theme}
+        aria-pressed={store.theme === theme}
+        onclick={() => store.setTheme(theme)}
+      >
+        {THEME_LABELS[theme]}
+      </button>
+    {/each}
+  </div>
+  <p class="muted" style="margin-bottom:0">
+    「端末の設定」はOS/ブラウザのライト・ダーク設定に追従します。
+  </p>
+</div>
 
 <div class="card">
   <h2>年度</h2>
@@ -157,9 +210,32 @@
     <button class="btn small" onclick={copyJson}>JSONをコピー</button>
     <button class="btn small" onclick={downloadJson}>ファイルに保存</button>
   </div>
+</div>
+
+<div class="card">
+  <h2>データの復元</h2>
+  <div class="row">
+    <button class="btn small" onclick={() => fileInput?.click()}>ファイルから読み込み</button>
+    {#if importFileName}
+      <span class="muted" style="align-self:center">{importFileName}</span>
+    {/if}
+  </div>
+  <input
+    bind:this={fileInput}
+    type="file"
+    accept="application/json,.json"
+    class="hidden-file"
+    onchange={onFilePicked}
+  />
   <div class="field" style="margin-top:10px">
-    <label for="restore">JSONから復元</label>
-    <textarea id="restore" bind:value={importJson} rows="4" placeholder="ここに貼り付け"></textarea>
+    <label for="restore">JSONを貼り付けて復元</label>
+    <textarea
+      id="restore"
+      bind:value={importJson}
+      oninput={() => (importFileName = '')}
+      rows="4"
+      placeholder="ここに貼り付け"
+    ></textarea>
   </div>
   <button class="btn" style="width:100%" onclick={restoreJson} disabled={!importJson.trim()}>
     復元（現在の年度データを置き換え）
@@ -184,6 +260,13 @@
 </div>
 
 <style>
+  .themes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
   .times {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -192,5 +275,9 @@
 
   .times .field {
     margin-bottom: 0;
+  }
+
+  .hidden-file {
+    display: none;
   }
 </style>

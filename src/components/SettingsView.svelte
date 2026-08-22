@@ -22,6 +22,8 @@
   let newWork = $state('');
   let newNote = $state('');
   let importJson = $state('');
+  let importFileName = $state('');
+  let fileInput = $state<HTMLInputElement | null>(null);
 
   function addPreset(kind: 'work' | 'note') {
     const value = (kind === 'work' ? newWork : newNote).trim();
@@ -54,11 +56,42 @@
     URL.revokeObjectURL(url);
   }
 
+  function readFile(file: File): Promise<string> {
+    if (typeof file.text === 'function') return file.text();
+    // File.text() 非対応環境（古い iOS Safari 等）向けフォールバック
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ''));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(file);
+    });
+  }
+
+  async function onFilePicked(e: Event) {
+    const input = e.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    // 同じファイルを選び直しても change が発火するようにクリアする
+    input.value = '';
+    if (!file) return;
+    try {
+      const text = await readFile(file);
+      JSON.parse(text);
+      importJson = text;
+      importFileName = file.name;
+      onnotify(`${file.name} を読み込みました`);
+    } catch {
+      importJson = '';
+      importFileName = '';
+      onnotify('ファイルを読み込めませんでした（JSON形式ではありません）');
+    }
+  }
+
   function restoreJson() {
     try {
       const data = normalizeData(JSON.parse(importJson), store.fiscalYear);
       store.replaceAll(data);
       importJson = '';
+      importFileName = '';
       onnotify(`${data.fiscalYear}年度のデータを復元しました`);
     } catch {
       onnotify('JSONの読み込みに失敗しました');
@@ -177,9 +210,32 @@
     <button class="btn small" onclick={copyJson}>JSONをコピー</button>
     <button class="btn small" onclick={downloadJson}>ファイルに保存</button>
   </div>
+</div>
+
+<div class="card">
+  <h2>データの復元</h2>
+  <div class="row">
+    <button class="btn small" onclick={() => fileInput?.click()}>ファイルから読み込み</button>
+    {#if importFileName}
+      <span class="muted" style="align-self:center">{importFileName}</span>
+    {/if}
+  </div>
+  <input
+    bind:this={fileInput}
+    type="file"
+    accept="application/json,.json"
+    class="hidden-file"
+    onchange={onFilePicked}
+  />
   <div class="field" style="margin-top:10px">
-    <label for="restore">JSONから復元</label>
-    <textarea id="restore" bind:value={importJson} rows="4" placeholder="ここに貼り付け"></textarea>
+    <label for="restore">JSONを貼り付けて復元</label>
+    <textarea
+      id="restore"
+      bind:value={importJson}
+      oninput={() => (importFileName = '')}
+      rows="4"
+      placeholder="ここに貼り付け"
+    ></textarea>
   </div>
   <button class="btn" style="width:100%" onclick={restoreJson} disabled={!importJson.trim()}>
     復元（現在の年度データを置き換え）
@@ -219,5 +275,9 @@
 
   .times .field {
     margin-bottom: 0;
+  }
+
+  .hidden-file {
+    display: none;
   }
 </style>

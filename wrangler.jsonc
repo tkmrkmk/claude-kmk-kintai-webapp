@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kmk-kintai-webapp",
+  "compatibility_date": "2026-08-29",
+
+  // 静的アセット配信のみ。将来サーバーロジックを足すときは "main" と
+  // "assets.binding" を追加する（README「Cloudflare Workers へのデプロイ」参照）。
+  "assets": {
+    "directory": "./dist",
+    // SPA だが App.svelte のタブ切替のみでルーターは持たない。
+    // 未知パスは index.html を返して 404 で真っ白にならないようにする。
+    "not_found_handling": "single-page-application"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

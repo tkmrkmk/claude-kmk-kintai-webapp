@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 要件: `doc/requirements.md`
 - 連携先 Excel の仕様（列構成・行番号算出・数式・祝日マスタ・TSV書式）: `doc/excel-format.md`
 - アーキテクチャと技術選定の理由: `doc/architecture.md`
+- Cloudflare Workers へのデプロイ手順: `doc/deploy-cloudflare.md`
 
 ## コマンド
 
@@ -20,10 +21,14 @@ npm run check     # svelte-check（型チェック）
 npm run build     # 型チェック + 本番ビルド（dist/）
 npm run build:only  # 型チェックなしのビルドのみ
 npm run preview   # ビルド結果の確認
+npm run preview:cf  # Workers ランタイム（workerd）でビルド結果を確認
+npm run deploy    # ビルド + Cloudflare Workers へデプロイ（要 wrangler login）
 ```
 
 自動テストは設定されていない。動作確認は `npm run check`（型）と `npm run dev` での手動確認が基本。
-`main` への push で `.github/workflows/pages.yml` が `npm run build` → GitHub Pages へデプロイする。
+`main` への push で2つの workflow が `npm run build` を実行してデプロイする。
+`.github/workflows/cloudflare.yml`（Cloudflare Workers / `wrangler.jsonc`）と
+`.github/workflows/pages.yml`（GitHub Pages）の並行運用。デプロイ先の詳細は README を参照。
 
 ## アーキテクチャ
 

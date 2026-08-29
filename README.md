@@ -5,6 +5,7 @@
 - 要件: `doc/requirements.md`
 - Excel仕様: `doc/excel-format.md`
 - アーキテクチャ: `doc/architecture.md`
+- Cloudflare Workers へのデプロイ手順: `doc/deploy-cloudflare.md`
 
 ## 構成
 
@@ -19,11 +20,50 @@ npm run dev      # 開発サーバ
 npm run check    # svelte-check（型チェック）
 npm run build    # 型チェック + 本番ビルド（dist/）
 npm run preview  # ビルド結果の確認
+npm run preview:cf  # Workers ランタイム（workerd）でビルド結果を確認
+npm run deploy   # ビルド + Cloudflare Workers へデプロイ
 ```
 
 `npm run build` の出力は `dist/` の静的ファイルのみ。`vite.config.ts` の `base: './'` により、
 GitHub Pages のようなサブディレクトリ配信でもそのまま動作する。
-`main` への push で `.github/workflows/pages.yml` が Pages へデプロイする（リポジトリ設定で Pages のソースを "GitHub Actions" にすること）。
+`main` への push で以下の2つの workflow が走る。どちらか一方だけを使う場合は不要な workflow を削除すること。
+
+- `.github/workflows/cloudflare.yml` — Cloudflare Workers（後述）
+- `.github/workflows/pages.yml` — GitHub Pages（リポジトリ設定で Pages のソースを "GitHub Actions" にすること）
+
+## Cloudflare Workers へのデプロイ
+
+`wrangler.jsonc` で `dist/` を静的アセットとして配信する。バックエンドは持たないが、
+将来サーバー側の処理を足す場合も同一オリジンのまま拡張できる構成にしてある。
+移行手順・選定理由・拡張時の構成は `doc/deploy-cloudflare.md` を参照。
+
+初回のみ、以下の準備が必要。
+
+1. `npx wrangler login`（ローカルからデプロイする場合）
+2. GitHub Actions からデプロイする場合はリポジトリの Secrets に以下を登録する
+   - `CLOUDFLARE_API_TOKEN` — テンプレート "Edit Cloudflare Workers" で作成
+   - `CLOUDFLARE_ACCOUNT_ID` — ダッシュボードの Workers & Pages ページに表示される ID
+
+`base: './'` の相対パス前提はルート配信でもそのまま動くため、アプリ側のコード変更は不要。
+`sw.js` を含む `dist/` 配下は丸ごとアセットとして配信される。
+
+### サーバーロジックを足すとき
+
+`wrangler.jsonc` に `main`（Worker のエントリ）と `assets.binding` を追加する。
+バインディングを付けると、アセットに該当しないリクエストだけが Worker のコードに渡る。
+
+```jsonc
+{
+  "main": "./worker/index.ts",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  }
+}
+```
+
+D1（SQLite）・KV・R2・Cron Triggers も同じ `wrangler.jsonc` にバインディングとして追加できる。
 
 ## ソース構成
 
